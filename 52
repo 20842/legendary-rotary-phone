@@ -1,0 +1,36 @@
+class Solution:
+    def totalNQueens(self, n: int) -> int:
+        self.count = 0
+        # Full mask represents n queens (e.g., if n=4, mask is 1111)
+        full_mask = (1 << n) - 1
+
+        def backtrack(row, cols, pos_diag, neg_diag):
+            if row == n:
+                self.count += 1
+                return
+
+            # Get all available positions in the current row
+            # (cols | pos_diag | neg_diag) gives all threatened spots
+            # ~ (NOT) and & full_mask gives the bits for free spots
+            available_spots = full_mask & ~(cols | pos_diag | neg_diag)
+
+            while available_spots:
+                # Extract the lowest set bit (position for the queen)
+                curr_spot = available_spots & -available_spots
+                
+                # Update masks for the next row:
+                # - cols: just add the current column bit
+                # - pos_diag: shift left because diagonals move 'left' as row increases
+                # - neg_diag: shift right because diagonals move 'right' as row increases
+                backtrack(
+                    row + 1, 
+                    cols | curr_spot, 
+                    (pos_diag | curr_spot) << 1, 
+                    (neg_diag | curr_spot) >> 1
+                )
+                
+                # Remove the bit we just processed to try the next available spot
+                available_spots ^= curr_spot
+
+        backtrack(0, 0, 0, 0)
+        return self.count
